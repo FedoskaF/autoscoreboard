@@ -1,5 +1,6 @@
 from openpyxl import load_workbook
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 
 wb = load_workbook("./points_test.xlsx")
 
@@ -22,16 +23,14 @@ print(voters)
 
 participants = []
 
-for i in range (4, p_num + 4):
+for i in range(4, p_num + 4):
     participants.append(str(sheet.cell(row=i, column=1).value))
 print(participants)
-
-#
 
 points_base = [[0] * p_num for i in range(v_num)]
 
 for i in range(2, v_num + 2):
-    for j in range (4, p_num + 4):
+    for j in range(4, p_num + 4):
         temp = sheet.cell(row=j, column=i).value
         if temp is None:
             points_base[i - 2][j - 4] = 0
@@ -59,9 +58,7 @@ for i in range(0, v_num):
         new_sheet['C' + str(j + 2)] = current_points[j]
     new_sheet.auto_filter.ref = "A1:C" + str(p_num + 1)
     new_sheet.auto_filter.add_sort_condition("C1:C" + str(p_num + 1))
-
 wb.save("./points_test.xlsx")
-
 '''
 
 current_points = [0] * p_num
@@ -84,12 +81,14 @@ for i in range(0, v_num):
         temp_arr.append(temp)
     data_type = [('part', 'U100'), ('get', int), ('sum', int)]
     sort_temp_arr = np.array(temp_arr, dtype=data_type)
-    sort_temp_arr = np.sort(sort_temp_arr, order='sum') # sort
+    sort_temp_arr = np.sort(sort_temp_arr, order='sum')  # sort
     res_arr = sort_temp_arr[::-1]
 
     print(voters[i], "voting:")
     print(res_arr)
 
+    im = Image.new('RGB', (1000, 1000), color=('#1C0606'))
+    font = ImageFont.truetype("C:/Users/user/Desktop/pythonsh/AutoTable3.8/Gotham-Medium.ttf", size=24)
     for j in range(0, p_num):
         if j < (p_num + 1) // 2:
             new_sheet['A' + str(j + 2)] = res_arr[j][0]
@@ -101,9 +100,26 @@ for i in range(0, v_num):
             if res_arr[j][1] != 0:
                 new_sheet['F' + str(j % ((p_num + 1) // 2) + 2)] = res_arr[j][1]
             new_sheet['G' + str(j % ((p_num + 1) // 2) + 2)] = res_arr[j][2]
+        draw_text = ImageDraw.Draw(im)
+        draw_text.text(
+            (100, 100 + j * 30),
+            res_arr[j][0],
+            font=font,
+            fill='#FFFFFF')
+        if res_arr[j][1] != 0:
+            draw_text.text(
+                (350, 100 + j * 30),
+                str(res_arr[j][1]),
+                font=font,
+                fill='#FFFFFF')
+        draw_text.text(
+            (450, 100 + j * 30),
+            str(res_arr[j][2]),
+            font=font,
+            fill='#FFFFFF')
+    im.save("C:/Users/user/Desktop/pythonsh/AutoTable3.8/images/" + str(i + 1) + ' ' + voters[i] + " voting.png")
 
-
-    ''' вставление в таблицу
+    ''' вставка в таблицу
     for j in range(0, p_num):
         new_sheet['A' + str(j + 2)] = res_arr[j][0]
         if res_arr[j][1] != 0:
